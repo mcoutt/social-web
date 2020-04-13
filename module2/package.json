@@ -4,8 +4,7 @@
   "description": "read csv file and write it in txt with pipe stream",
   "main": "app.js",
   "scripts": {
-    "start": "nodemon --watch",
-    "app": "nodemon --exec babel-node app.js",
+    "start": "nodemon --exec babel-node app.js",
     "build": "babel app.js  --presets @babel/preset-env -o build/app.js",
     "serve": "node build/app.js"
   },
