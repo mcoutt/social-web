@@ -6,8 +6,8 @@
   "scripts": {
     "start": "nodemon --watch",
     "app": "nodemon --exec babel-node app.js",
-    "buildTask2": "babel app.js -o build/app.js",
-    "serveTask2": "node build/app.js"
+    "build": "babel app.js  --presets @babel/preset-env -o build/app.js",
+    "serve": "node build/app.js"
   },
   "repository": {
     "type": "git",

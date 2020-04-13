@@ -25,9 +25,8 @@ const createUser = (req, res) => {
 const updateUser = (req, res) => {
     const id = req.body.id ? req.body.id : req.params.id
     if (id) {
-        const user = getOneUser(req.params.id)
+        const user = getOneUser(id)
         if (user) {
-
             user.login = req.body.login ? req.body.login : user.login;
             user.password = req.body.password ? req.body.password : user.password;
             user.age = req.body.age ? req.body.age : user.age;
@@ -58,7 +57,6 @@ const deleteUser = (req, res) => {
 }
 
 const getUser = (req, res) => {
-    console.log('============================')
     if (req.params.id) {
         const user = getOneUser(req.params.id)
         if (user) {

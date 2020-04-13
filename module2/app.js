@@ -1,7 +1,7 @@
 const express = require('express')
 const bodyParser = require('body-parser')
 const cookieParser = require('cookie-parser')
-import initRoutes from './routes/index'
+const initRoutes = require('./routes/index')
 
 const app = express()
 const router = express.Router()
@@ -12,4 +12,6 @@ app.use(cookieParser())
 
 
 // Routes
-app.use(initRoutes(router));
+app.use('/api', router);
+
+initRoutes(router)
