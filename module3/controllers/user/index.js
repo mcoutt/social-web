@@ -1,0 +1,112 @@
+import UserService from '../../services/user'
+const _ = require('lodash');
+import { Container } from 'typedi';
+
+
+const createUser = async (req, res) => {
+    const userService = await Container.get('UserService')
+    const User = {
+        login: req.body.login,
+        password: req.body.password,
+        age: req.body.age,
+        isDeleted: false
+    }
+    userService.createUser(User)
+        .then(serviceRes => {
+            if (!serviceRes) {
+                res.status(200).json(User)
+            } else {
+                res.status(400).json(serviceRes.data)
+            }
+        })
+        .catch(e => {
+            console.log(e)
+        })
+}
+
+
+const updateUser = async (req, res) => {
+    if (req.body.id) {
+        const userService = await Container.get('UserService')
+        const getUser = await userService.getUserById(req.body.id)
+        if (getUser.id) {
+            let user = {}
+            user.id = getUser.id
+            user.login = req.body.login ? req.body.login : getUser.login;
+            user.password = req.body.password ? req.body.password : getUser.password;
+            user.age = req.body.age ? req.body.age : getUser.age;
+            user.isDeleted = req.body.isDeleted === false ? req.body.isDeleted : getUser.isDeleted;
+
+            userService.updateUser(user)
+            res.status(200).json(user)
+        } else {
+            res.status(404).json('User not found')
+        }
+    } else {
+        res.status(400).json('Id not valid')
+    }
+}
+
+
+const deleteUser = async (req, res) => {
+    const userService = await Container.get('UserService')
+    if (req.params.id) {
+        userService.deleteUser(req.params.id)
+            .then(response =>{
+                if (response === 1) {
+                    res.status(200).json([])
+                } else {
+                    res.status(404).json(response)
+                }
+            })
+    } else {
+        res.status(400).json('Id not sent')
+    }
+}
+
+const getUser = async (req, res) => {
+    const userService = await Container.get('UserService')
+    if (req.query.login) {
+        const user = await userService.getUser(req.query.login)
+        if (user) {
+            res.status(200).json(user)
+        } else {
+            res.status(404).json('User not found')
+        }
+    } else {
+        res.status(400).json('Login not valid')
+    }
+}
+
+const getAllUsers = async (req, res) => {
+    const userService = await Container.get('UserService')
+    res.status(200).json(await userService.getUsers())
+}
+
+
+const getAutoSuggestUsers = async (req, res) => {
+    const loginSubstring = req.params.suggest
+    const limit = req.params.limit
+    const num = parseInt(limit, 10)
+
+    if (loginSubstring && limit) {
+        const userService = await Container.get('UserService')
+        const exists = await userService.getSuggestUser(loginSubstring, num)
+        if (exists.length > 0) {
+            res.status(200).json(exists)
+        } else {
+            res.status(404).json("Substring in logins doesn't exist")
+        }
+    } else {
+        res.status(400).json('Login substring and/or valid not provided')
+    }
+}
+
+module.exports = {
+    createUser,
+    updateUser,
+    getAllUsers,
+    getUser,
+    deleteUser,
+    getAutoSuggestUsers
+}
