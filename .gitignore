@@ -2,6 +2,7 @@
 
 module1/node_modules/
 module2/node_modules/
+module3/node_modules/
 
 .vscode/
 .idea/
