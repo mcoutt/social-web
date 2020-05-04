@@ -1,5 +1,3 @@
-import UserService from '../../services/user'
-const _ = require('lodash');
 import { Container } from 'typedi';
 
 
@@ -66,8 +64,8 @@ const deleteUser = async (req, res) => {
 
 const getUser = async (req, res) => {
     const userService = await Container.get('UserService')
-    if (req.query.login) {
-        const user = await userService.getUser(req.query.login)
+    if (req.params.id) {
+        const user = await userService.getUser(req.params.id)
         if (user) {
             res.status(200).json(user)
         } else {

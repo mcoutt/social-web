@@ -1,13 +1,26 @@
 'use strict';
 module.exports = (sequelize, DataTypes) => {
-  const Users = sequelize.define('Users', {
+  const User = sequelize.define('User', {
+    id: {
+      type: DataTypes.UUID,
+      allowNull: false,
+      primaryKey: true,
+      defaultValue: DataTypes.UUIDV4
+    },
+
     login: DataTypes.STRING,
     password: DataTypes.STRING,
     age: DataTypes.INTEGER,
     isDeleted: DataTypes.BOOLEAN
-  }, {});
-  Users.associate = function(models) {
-    // associations can be defined here
+  }, {
+    timestamps: true
+  });
+  User.associate = function(models) {
+    User.belongsToMany(models.Group, {
+      through: 'UserGroup',
+      as: 'groups',
+      foreignKey: 'user_id',
+    })
   };
-  return Users;
+  return User;
 };

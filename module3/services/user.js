@@ -1,17 +1,21 @@
 import {Container} from 'typedi';
-const { Sequelize } = require('sequelize')
+
+const {Sequelize} = require('sequelize')
 const Op = Sequelize.Op;
 
 export default class UserService {
 
     userModel = Container.get('userModel')
+    groupModel = Container.get('groupModel')
+    usersGroupsModel = Container.get('usersGroupsModel')
 
     createUser = async (user) => {
-        const exist = await this.getUser(user.login)
+        const exist = await this.getUser(user.id)
         if (exist) {
-            if (exist.login === user.login) {
+            if (exist.id === user.id) {
                 return {
-                    data: "User with this login exist. Please choose another login name.."}
+                    data: "User with this login exist. Please choose another login name.."
+                }
             }
         }
         await this.userModel.create(user)
@@ -19,7 +23,15 @@ export default class UserService {
 
     getUser = async (user) => {
         try {
-            return this.userModel.findOne({where: {login: user}})
+            return this.userModel.findByPk(
+                user, {
+                    include: [
+                        {
+                            model: this.groupModel,
+                            as: 'groups'
+                        }]
+                }
+            )
         } catch (e) {
             console.log(e)
         }
@@ -27,7 +39,7 @@ export default class UserService {
 
     getUserById = async (id) => {
         try {
-            return this.userModel.findOne({where: {id: id}})
+            return this.userModel.findByPk(id)
         } catch (e) {
             console.log(e)
         }
@@ -60,10 +72,12 @@ export default class UserService {
 
     deleteUser = async (user) => {
         const exist = await this.getUserById(user)
-            if (!exist) {
+        if (!exist) {
             return {
-                data: "User doesn't exist. Please choose another user id.."}
+                data: "User doesn't exist. Please choose another user id.."
             }
+        }
+        await this.usersGroupsModel.destroy({where: {user_id: user}})
         const updated = await this.userModel.update(
             {isDeleted: true},
             {where: {id: user}}
