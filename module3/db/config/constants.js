@@ -1,2 +1,0 @@
-
-export const Permission = ['READ', 'WRITE', 'DELETE', 'SHARE', 'UPLOAD_FILES']
