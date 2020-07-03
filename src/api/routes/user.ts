@@ -4,7 +4,7 @@ import {EntityManager, getConnection, getRepository, Like, Repository} from "typ
 import {IUser, IUserInputDTO} from "../../interfaces/IUser";
 import {User} from "../../db";
 import {Route} from "index";
-import {UserDataAccess} from "../../data-access/user";
+import {UserDataAccess} from "../../controller/user";
 // import {delUserGroups} from "./group";
 
 

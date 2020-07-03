@@ -10,7 +10,7 @@ createConnection(typeOrmConfig)
 
         console.log('PG connected.');
 
-        const { server } = initApp();
+        const { server } = await initApp();
 
         server.listen(process.env.PORT)
 

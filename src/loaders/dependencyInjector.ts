@@ -1,5 +1,5 @@
 import {Container} from "typedi";
-// import UserService from '../services/user'
+import {UserService} from '../services/user'
 // import GroupService from '../services/group'
 import dependencyInjectorLoader from "./dependencyInjectorLoader";
 
@@ -29,7 +29,7 @@ export const initDependencyInjector = async (): Promise<void> => {
         ],
     });
 
-    // Container.set('UserService', new UserService())
+    Container.set('UserService', new UserService())
     // Container.set('GroupService', new GroupService())
     console.log('Dependency Injector loaded');
 };

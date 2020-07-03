@@ -1,4 +1,5 @@
 import http from "http";
+import { initializeTransactionalContext } from 'typeorm-transactional-cls-hooked';
 const express = require('express');
 import { Application } from 'express'
 const bodyParser = require('body-parser')
@@ -7,10 +8,11 @@ import {initRoutes} from '../api'
 import {initDependencyInjector} from "./dependencyInjector";
 
 
-export function initApp() {
+export async function initApp() {
     console.log('Get loaders')
 
-    initDependencyInjector()
+    initializeTransactionalContext()
+    await initDependencyInjector()
 
     const app: Application = express();
     app.use(bodyParser.json())

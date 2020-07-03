@@ -5,7 +5,7 @@ import {IGroup} from "../../interfaces/IGroup";
 import {Group} from "../../db";
 import {Route} from "index";
 import {Permission} from "../constants";
-import {GroupDataAccess} from "../../data-access/group";
+import {GroupDataAccess} from "../../controller/group";
 
 
 export const initGroupRoutes = (): Route[] => {
