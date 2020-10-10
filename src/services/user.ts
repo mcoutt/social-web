@@ -1,7 +1,7 @@
 import {Service, Inject} from 'typedi';
 import {ISuggest, IUser, IUserInputDTO} from "../interfaces/IUser";
 import {Container} from "typedi";
-import {User} from "../db";
+import {User} from "../entity/User";
 import {UserRepository} from "../repository/user";
 import {runOnTransactionCommit, Transactional} from "typeorm-transactional-cls-hooked";
 import {OrmRepository} from "typeorm-typedi-extensions";
@@ -11,11 +11,13 @@ import {GroupRepository} from "../repository/group";
 
 @Service()
 export class UserService {
-    protected repository: UserRepository = getCustomRepository(UserRepository)
-    protected groupRepository: GroupRepository = getCustomRepository(GroupRepository)
+    constructor(
+        protected repository: UserRepository = getCustomRepository(UserRepository)
+        // protected groupRepository: GroupRepository = getCustomRepository(GroupRepository)
+    ) {}
 
     @Transactional()
-    async createUser(options: any): Promise<User> {
+    async createUser(options: any): Promise<IUser> {
         return await this.repository.createAndSave(options)
         // runOnTransactionCommit(() => this.events.emit('post created'))
 //     const exist = await this.getUser(user.id)
@@ -31,7 +33,7 @@ export class UserService {
     }
 
     @Transactional()
-    public async GetUsers(): Promise<User[]> {
+    public async GetUsers(): Promise<IUser[]> {
         try {
             return this.repository.allUsers()
         } catch (e) {
@@ -40,7 +42,7 @@ export class UserService {
     }
 
     @Transactional()
-    public async GetUser(id: string): Promise<User> {
+    public async GetUser(id: string): Promise<IUser> {
         try {
             return this.repository.findOneUser(id)
         } catch (e) {
@@ -59,11 +61,14 @@ export class UserService {
     }
 
     @Transactional()
-    deleteUser = async (user: IUserInputDTO): Promise<IUserInputDTO> => {
+    public async deleteUser(user: IUserInputDTO): Promise<IUserInputDTO> {
+        try {
         // this.groupRepository.deleteGroup()
         return this.repository.updateUser(user)
+        } catch (e){
+            console.log(e)
+        }
     }
-
 }
 
 

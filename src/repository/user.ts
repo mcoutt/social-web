@@ -1,25 +1,25 @@
 import {EntityRepository, Repository, getRepository} from "typeorm";
 import { BaseRepository } from 'typeorm-transactional-cls-hooked';
-import {User} from "../db";
+import {User} from "../entity/User";
 import * as util from "util";
 import {IUser, IUserInputDTO} from "../interfaces/IUser";
 
 
 @EntityRepository(User)
-export class UserRepository extends BaseRepository<User> {
+export class UserRepository extends BaseRepository<IUser> {
 
-    async createAndSave(user: User): Promise<User> {
-        let res_user: User = new User(user);
+    async createAndSave(user: IUser): Promise<IUser> {
+        let res_user: IUser = new User(user);
         return await this.save(res_user);
     }
 
-    async allUsers(): Promise<User[]> {
+    async allUsers(): Promise<IUser[]> {
         return await this.createQueryBuilder("user")
                 .leftJoinAndSelect("user.groups", "group")
                 .getMany();
     }
 
-    async findOneUser(userId: string): Promise<User> {
+    async findOneUser(userId: string): Promise<IUser> {
         let user = await this.createQueryBuilder("user")
                     .leftJoinAndSelect("user.groups", "group")
                     .andWhere("user.id = :id", {id: userId})
@@ -42,7 +42,7 @@ export class UserRepository extends BaseRepository<User> {
         return user;
     }
 
-    async deleteUser(user: string | User) {
+    async deleteUser(user: string | IUser) {
         if (typeof user !== 'string'
             && !UserRepository.isUser(user)) {
             throw new Error('Supplied user object not a User');
@@ -52,7 +52,7 @@ export class UserRepository extends BaseRepository<User> {
                 ? user : user.id);
     }
 
-    static isUser(user: any): user is User {
+    static isUser(user: any): user is IUser {
         return typeof user === 'object'
             && typeof user.login === 'string'
             && typeof user.password === 'string'

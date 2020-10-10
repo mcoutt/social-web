@@ -1,18 +1,22 @@
 import {Container} from "typedi";
 import {EntityManager, getConnection, getRepository, Like, Repository, UpdateResult} from "typeorm";
 import {IUser, IUserInputDTO} from "../interfaces/IUser";
-import {User} from "../db";
+import {User} from "../entity/User";
 import {delUserGroups} from "./group";
 import {UserService} from "../services/user";
 
 
 export class UserDataAccess {
-    public static async addUser(options: IUserInputDTO): Promise<User> {
+
+    // private userRepo: Repository<IUser> = getRepository(User)
+
+
+    public static async addUser(options: IUserInputDTO): Promise<IUser> {
         const userService: UserService = Container.get(UserService)
         return await userService.createUser(options)
     }
 
-    public static async getUser(userId: string): Promise<User> {
+    public static async getUser(userId: string): Promise<IUser> {
         try {
             const userService: UserService = Container.get(UserService)
             return await userService.GetUser(userId)
@@ -60,7 +64,7 @@ export class UserDataAccess {
         }
     }
 
-    public static async userList(): Promise<User[]> {
+    public static async userList(): Promise<IUser[]> {
         try {
             const userService: UserService = Container.get(UserService)
             return await userService.GetUsers()
@@ -71,9 +75,10 @@ export class UserDataAccess {
 
     public static async getSuggestUsers(login: string, queryLimit: number): Promise<IUser | IUser[]> {
         try {
+            const userRepo: Repository<IUser> = getRepository(User);
+
             let result: any
             await getConnection().transaction(async (manager: EntityManager): Promise<void> => {
-                const userRepo: Repository<User> = await manager.getRepository(User)
                 result = await userRepo.find({
                 where: {
                     login: Like(`%${login}%`)

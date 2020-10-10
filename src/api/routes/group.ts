@@ -1,16 +1,16 @@
-import {Handler, Request, Response} from 'express'
+import * as express from 'express'
 import {Container} from "typedi";
 import {DeleteResult, EntityManager, getConnection, getRepository, Repository} from "typeorm";
 import {IGroup} from "../../interfaces/IGroup";
-import {Group} from "../../db";
-import {Route} from "index";
+import {Group} from "../../entity/Group";
+import * as Route from "../routes/user";
 import {Permission} from "../constants";
 import {GroupDataAccess} from "../../controller/group";
 
 
-export const initGroupRoutes = (): Route[] => {
+export const initGroupRoutes = () => {
 
-    const addGroup: Handler = async (req: Request, res: Response): Promise<void> => {
+    const addGroup: express.Handler = async (req: express.Request, res: express.Response): Promise<void> => {
         const options = {
             name: req.body.name,
             permissions: req.body.permissions,
@@ -24,7 +24,7 @@ export const initGroupRoutes = (): Route[] => {
         res.status(200).json(group)
     }
 
-    const getGroup: Handler = async (req: Request, res: Response): Promise<void> => {
+    const getGroup: express.Handler = async (req: express.Request, res: express.Response): Promise<void> => {
         try {
             const id: string = req.params.id.toString()
             const group: IGroup = await GroupDataAccess.getGroup(id)
@@ -34,7 +34,7 @@ export const initGroupRoutes = (): Route[] => {
         }
     }
 
-    const updateGroup: Handler = async (req: Request, res: Response): Promise<void> => {
+    const updateGroup: express.Handler = async (req: express.Request, res: express.Response): Promise<void> => {
         try {
             const options: IGroup = req.body
             const group: IGroup = await GroupDataAccess.updateGroup(options)
@@ -44,7 +44,7 @@ export const initGroupRoutes = (): Route[] => {
         }
     }
 
-    const deleteGroup: Handler = async (req: Request, res: Response): Promise<void> => {
+    const deleteGroup: express.Handler = async (req: express.Request, res: express.Response): Promise<void> => {
         try {
             const group: string = req.params.id.toString()
             const resp: DeleteResult = await GroupDataAccess.deleteGroup(group)
@@ -54,7 +54,7 @@ export const initGroupRoutes = (): Route[] => {
         }
     }
 
-    const groupList: Handler = async (req: Request, res: Response): Promise<void> => {
+    const groupList: express.Handler = async (req: express.Request, res: express.Response): Promise<void> => {
         try {
             let allGroups: any = await GroupDataAccess.groupList()
             res.status(200).json(allGroups)
@@ -63,7 +63,7 @@ export const initGroupRoutes = (): Route[] => {
         }
     }
 
-    const addUserToGroup: Handler = async (req: Request, res: Response): Promise<void> => {
+    const addUserToGroup: express.Handler = async (req: express.Request, res: express.Response): Promise<void> => {
         try {
             const usersIds: string[] = req.body.usersIds
             const groupId: string = req.body.groupId
@@ -74,7 +74,7 @@ export const initGroupRoutes = (): Route[] => {
         }
     }
 
-    const delUserFromGroup: Handler = async (req: Request, res: Response): Promise<void> => {
+    const delUserFromGroup: express.Handler = async (req: express.Request, res: express.Response): Promise<void> => {
         try {
             const usersIds: string[] = req.body.usersIds
             const groupId: string = req.body.groupId

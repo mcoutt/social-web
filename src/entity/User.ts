@@ -1,3 +1,22 @@
+// import {Entity, PrimaryGeneratedColumn, Column} from "typeorm";
+//
+// @Entity()
+// export class User {
+//
+//     @PrimaryGeneratedColumn()
+//     id: number;
+//
+//     @Column()
+//     firstName: string;
+//
+//     @Column()
+//     lastName: string;
+//
+//     @Column()
+//     age: number;
+//
+// }
+
 import {
     Entity,
     PrimaryGeneratedColumn,
@@ -42,8 +61,8 @@ export class User {
     @UpdateDateColumn({nullable: true})
     public updateDate: Date;
 
-    @ManyToMany(type => Group, group => group.users)
-    groups: Group[];
+    // @ManyToMany(type => Group, group => group.users)
+    // groups: Group[];
 
     constructor(options: UserOptions = {}) {
         this.login = options.login;

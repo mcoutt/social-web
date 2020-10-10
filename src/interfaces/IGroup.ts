@@ -1,15 +1,16 @@
-import {GroupPermissionsType} from "index";
+// import {GroupPermissionsType} from "index";
 
 export interface IGroup {
+    // permissions: any;
     id?: string;
     name?: string;
-    permissions?: GroupPermissionsType;
+    // permissions?: GroupPermissionsType;
 }
 
 export interface IGroupUsers {
     id?: string;
     name?: string;
-    permissions?: GroupPermissionsType;
+    // permissions?: GroupPermissionsType;
     users?: string[]
 }
 

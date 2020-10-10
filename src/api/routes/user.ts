@@ -2,13 +2,13 @@ import {Handler, Request, Response} from 'express'
 // import {Container} from "typedi";
 import {EntityManager, getConnection, getRepository, Like, Repository} from "typeorm";
 import {IUser, IUserInputDTO} from "../../interfaces/IUser";
-import {User} from "../../db";
-import {Route} from "index";
+import {User} from "../../entity/User";
+// import {Route} from "index";
 import {UserDataAccess} from "../../controller/user";
 // import {delUserGroups} from "./group";
 
 
-export const initUserRoutes = (): Route[] => {
+export const initUserRoutes = () => {
 
     const addUser: Handler = async (req: Request, res: Response): Promise<void> => {
         await getConnection().transaction(async (manager: EntityManager): Promise<void> => {
@@ -18,7 +18,7 @@ export const initUserRoutes = (): Route[] => {
                 age: req.body.age,
                 isDeleted: false
             }
-            const user: User = await UserDataAccess.addUser(options);
+            const user: IUser = await UserDataAccess.addUser(options);
             res.status(200).json(user)
         })
     }
@@ -26,7 +26,7 @@ export const initUserRoutes = (): Route[] => {
     const getUser: Handler = async (req: Request, res: Response): Promise<void> => {
         try {
             const id: string = req.params.id.toString()
-                const user: User = await UserDataAccess.getUser(id)
+                const user: IUser = await UserDataAccess.getUser(id)
                 res.status(200).json(user)
         } catch (e) {
             console.log(e)
@@ -55,7 +55,9 @@ export const initUserRoutes = (): Route[] => {
 
     const userList: Handler = async (req: Request, res: Response): Promise<void> => {
         try {
-                const allUsers: User[] = await UserDataAccess.userList()
+                console.log('===========')
+                const allUsers: IUser[] = await UserDataAccess.userList()
+            console.log(allUsers)
                 res.status(200).json(allUsers)
         } catch (e) {
             console.log(e)

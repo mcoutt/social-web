@@ -1,29 +1,36 @@
-import http from "http";
-import { initializeTransactionalContext } from 'typeorm-transactional-cls-hooked';
-const express = require('express');
-import { Application } from 'express'
-const bodyParser = require('body-parser')
-const cookieParser = require('cookie-parser')
-import {initRoutes} from '../api'
-import {initDependencyInjector} from "./dependencyInjector";
+import expressLoader from './express'
+// import typeOrmConnection from './typeOrm'
+import dependencyInjectorLoader from "./dependencyInjector";
+
+const User = require('../entity/User')
+const Group = require('../entity/Group')
 
 
-export async function initApp() {
-    console.log('Get loaders')
+export default async ({ expressApp }) => {
+    // const connection = await typeOrmConnection();
 
-    initializeTransactionalContext()
-    await initDependencyInjector()
+    console.log('Start loaders')
 
-    const app: Application = express();
-    app.use(bodyParser.json())
-
-    app.use(cookieParser())
-    // Routes
-    initRoutes(app)
-
-    const server: http.Server = http.createServer(app)
-
-    return {
-        server
+    // injecting the sequelize models into the DI container.
+    const userModel = {
+        name: 'userModel',
+        model: User,
     }
+
+    const groupModel = {
+        name: 'groupModel',
+        model: Group
+    }
+
+
+    // It returns the agenda instance because it's needed in the subsequent loaders
+    dependencyInjectorLoader({
+        models: [
+            userModel,
+            groupModel,
+        ],
+    });
+
+    await expressLoader({ app: expressApp });
+    console.info('Loaders complete');
 }

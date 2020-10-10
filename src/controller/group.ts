@@ -1,13 +1,14 @@
 import {Container} from "typedi";
 import {DeleteResult, EntityManager, getConnection, getRepository, Repository} from "typeorm";
 import {IGroup} from "../interfaces/IGroup";
-import {Group, User} from "../db";
+import {Group} from "../entity/Group";
+import {User} from "../entity/User";
 
 
 export const delUserGroups: any = async (usersIds: string[] | string, groupId: string): Promise<void> => {
     await getConnection().transaction(async (manager: EntityManager): Promise<IGroup> => {
         let updatedGroup: IGroup;
-        const groupRepo: Repository<Group> = manager.getRepository(Group)
+        const groupRepo: Repository<IGroup> = manager.getRepository(Group)
         const group: any = await groupRepo.findOne(groupId)
         if (Array.isArray(usersIds)) {
             usersIds.map(async id => {
@@ -63,7 +64,7 @@ export class GroupDataAccess {
                 const groupRepo: Repository<Group> = manager.getRepository(Group);
                 group = await groupRepo.findOne(options.id)
                 group.name = options.name ? options.name : group.name
-                group.permissions = options.permissions ? options.permissions : group.permissions
+                // group.permissions = options.permissions ? options.permissions : group.permissions
                 await groupRepo.save(group)
             })
             return group
@@ -84,7 +85,7 @@ export class GroupDataAccess {
         } catch (e) {
             console.log(e)
         }
-    };
+    }
 
     public static async groupList(): Promise<IGroup[]> {
         try {

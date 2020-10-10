@@ -6,7 +6,7 @@ export interface IUser {
     password?: string;
     age?: number;
     isDeleted?: boolean;
-    groups?: IGroup
+    // groups?: IGroup
 }
 
 export interface IUserInputDTO {

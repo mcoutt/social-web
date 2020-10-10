@@ -1,35 +1,16 @@
 import {Container} from "typedi";
-import {UserService} from '../services/user'
-// import GroupService from '../services/group'
-import dependencyInjectorLoader from "./dependencyInjectorLoader";
+// import {modelType} from "index";
 
 
-const db = require('../db')
-
-export const initDependencyInjector = async (): Promise<void> => {
-
-    console.log('Load DI')
-
-    // injecting the sequelize models into the DI container.
-    const userModel = {
-        name: 'userModel',
-        model: db.User,
+export default ({ models }: { models: {name: string, model: any}[] }) => {
+    try {
+        models.forEach(m => {
+            Container.set(m.name, m.model);
+        });
+    } catch (e) {
+        console.log(e)
+        throw e;
     }
 
-    const groupModel = {
-        name: 'groupModel',
-        model: db.Group
-    }
-
-    // It returns the agenda instance because it's needed in the subsequent loaders
-    await dependencyInjectorLoader({
-        models: [
-            userModel,
-            groupModel,
-        ],
-    });
-
-    Container.set('UserService', new UserService())
-    // Container.set('GroupService', new GroupService())
     console.log('Dependency Injector loaded');
 };

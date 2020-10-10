@@ -1,11 +1,6 @@
-# Distribution / packaging
-
-built/
+.idea/
+.vscode/
+node_modules/
 build/
 tmp/
 temp/
-node_modules/
-.env
-
-.vscode/
-.idea/

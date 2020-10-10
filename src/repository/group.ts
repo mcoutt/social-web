@@ -1,19 +1,19 @@
 import {EntityRepository, Repository, getRepository} from "typeorm";
 import { BaseRepository } from 'typeorm-transactional-cls-hooked';
-import {Group} from "../db";
+import {Group} from "../entity/Group";
 import * as util from "util";
 import {IGroup} from "../interfaces/IGroup";
 
 
 @EntityRepository(Group)
-export class GroupRepository extends BaseRepository<Group> {
+export class GroupRepository extends BaseRepository<IGroup> {
 
-    async createAndSave(group: Group): Promise<Group> {
-        let res_group: Group = new Group(group);
+    async createAndSave(group: IGroup): Promise<IGroup> {
+        let res_group: IGroup = new Group(group);
         return await this.save(res_group);
     }
 
-    async allGroups(): Promise<Group[]> {
+    async allGroups(): Promise<IGroup[]> {
         return await this.createQueryBuilder("group")
                 .leftJoinAndSelect("group.groups", "group")
                 .getMany();

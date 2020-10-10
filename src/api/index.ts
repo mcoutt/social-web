@@ -1,10 +1,10 @@
-import {Application, Handler, Router, Request, Response, NextFunction} from 'express';
+import * as express from 'express';
 import {initUserRoutes} from "./routes/user";
 import {requestMiddleware} from "./middlewares/request";
 import {initGroupRoutes} from "./routes/group";
 
 
-export function initRoutes(app: Application): void {
+export function initRoutes(app: express.Application): void {
 
     const routes = [
         ...initUserRoutes(),
@@ -12,10 +12,10 @@ export function initRoutes(app: Application): void {
     ];
     for (const route of routes) {
         const path: string = `/api${route.path}`;
-        const middleware: Handler[] = [requestMiddleware];
-        if (route.middleware) {
-            middleware.push(route.middleware);
-        }
+        const middleware: express.Handler[] = [requestMiddleware];
+        // if (route.middleware) {
+        //     middleware.push(route.middleware);
+        // }
         app[route.method](path, middleware, route.handler);
     }
 }
