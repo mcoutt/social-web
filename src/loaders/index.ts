@@ -1,5 +1,4 @@
 import expressLoader from './express'
-// import typeOrmConnection from './typeOrm'
 import dependencyInjectorLoader from "./dependencyInjector";
 
 const User = require('../entity/User')
@@ -7,7 +6,6 @@ const Group = require('../entity/Group')
 
 
 export default async ({ expressApp }) => {
-    // const connection = await typeOrmConnection();
 
     console.log('Start loaders')
 

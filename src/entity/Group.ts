@@ -8,12 +8,7 @@ import {
     JoinTable
 } from "typeorm";
 import {User} from "./User";
-
-
-export interface GroupOptions {
-    name?: string;
-    // permissions?: GroupPermissionsType;
-}
+import {IGroup} from "../interfaces/IGroup";
 
 
 @Entity()
@@ -37,7 +32,7 @@ export class Group {
         array: true,
         default: ["READ",]
     })
-    // permissions: GroupPermissionsType;
+    permissions: string[];
 
     @CreateDateColumn({nullable: true})
     public createDate: Date;
@@ -45,13 +40,13 @@ export class Group {
     @UpdateDateColumn({nullable: true})
     public updateDate: Date;
 
-    // @ManyToMany(type => User, user => user.groups)
-    // @JoinTable()
-    // users: User[];
+    @ManyToMany(type => User, user => user.groups)
+    @JoinTable()
+    users: User[];
 
-    constructor(options: GroupOptions = {}) {
+    constructor(options: IGroup = {}) {
         this.name = options.name;
-        // this.permissions = options.permissions;
+        this.permissions = options.permissions;
     }
 
 }

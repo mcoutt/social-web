@@ -1,85 +1,97 @@
-import {EntityRepository, Repository, getRepository} from "typeorm";
-import { BaseRepository } from 'typeorm-transactional-cls-hooked';
+import {EntityRepository, getRepository} from "typeorm";
+import {BaseRepository} from 'typeorm-transactional-cls-hooked';
 import {User} from "../entity/User";
 import * as util from "util";
-import {IUser, IUserInputDTO} from "../interfaces/IUser";
+import {IUser} from "../interfaces/IUser";
+import {normalizeNumber} from "../types";
+import {Group} from "../entity/Group";
 
 
 @EntityRepository(User)
-export class UserRepository extends BaseRepository<IUser> {
+export class UserRepository extends BaseRepository<User> {
+    private userRepository = getRepository(User)
 
-    async createAndSave(user: IUser): Promise<IUser> {
+    async createUser(user: IUser): Promise<IUser> {
         let res_user: IUser = new User(user);
-        return await this.save(res_user);
+        return await this.userRepository.save(res_user);
     }
 
     async allUsers(): Promise<IUser[]> {
-        return await this.createQueryBuilder("user")
-                .leftJoinAndSelect("user.groups", "group")
-                .getMany();
+        // return await this.userRepository.createQueryBuilder("user")
+        //     .leftJoinAndSelect("user.groups", "group")
+        //     .getMany();
+        return await this.userRepository.createQueryBuilder("user")
+            .leftJoinAndSelect("user.groups", "group")
+            .getMany();
     }
 
-    async findOneUser(userId: string): Promise<IUser> {
-        let user = await this.createQueryBuilder("user")
-                    .leftJoinAndSelect("user.groups", "group")
-                    .andWhere("user.id = :id", {id: userId})
-                    .getOne()
-        if (!UserRepository.isUser(user)) {
-            throw new Error(`User id ${util.inspect(userId)} did not retrieve a User`);
-        }
+    async findOneUser(userId: string): Promise<IUser | object> {
+        let user = await this.userRepository.createQueryBuilder("user")
+            .leftJoinAndSelect("user.groups", "group")
+            .andWhere("user.id = :id", {id: userId})
+            .getOne()
+        // if (!UserRepository.isUser(user)) {
+        //     throw new Error(`User id ${util.inspect(userId)} did not retrieve a User`);
+        // }
         return user;
     }
 
-    async updateUser(user: IUserInputDTO): Promise<IUserInputDTO> {
+    async findOneUserByName(username: string): Promise<IUser> {
+        let user = await this.userRepository.createQueryBuilder("user")
+            .leftJoinAndSelect("user.groups", "group")
+            .andWhere("user.login = :user", {user: username})
+            .getOne()
+        // if (!UserRepository.isUser(user)) {
+        //     throw new Error(`User id ${util.inspect(username)} did not retrieve a User`);
+        // }
+        return user;
+    }
+
+    async updateUser(user: IUser): Promise<IUser> {
         if (typeof user.age !== 'undefined') {
             user.age = normalizeNumber(user.age, 'Bad year entered');
         }
 
-        if (!UserRepository.isUserUpdater(user)) {
-            throw new Error(`User update id ${util.inspect(user.id)} did not receive a User updater ${util.inspect(user)}`);
-        }
-        await this.manager.update(User, user.id, user);
-        return user;
+        return await this.userRepository.createQueryBuilder("user")
+            .update(User)
+            .set(user)
+            .where("id = :id", {id: user.id})
+            .returning("*")
+            .execute()
+            .then((response) => {
+                const res = response
+                return response.raw[0];
+            });
     }
 
-    async deleteUser(user: string | IUser) {
-        if (typeof user !== 'string'
-            && !UserRepository.isUser(user)) {
-            throw new Error('Supplied user object not a User');
-        }
-        await this.manager.delete(User,
-            typeof user === 'string'
-                ? user : user.id);
+    async removeFromGroup(userId: string | string[], groups: string[]) {
+        groups.map(async (id) => {
+            await this.userRepository.createQueryBuilder("user")
+                .relation("groups")
+                .of(id)
+                .remove(userId)
+        })
     }
 
-    static isUser(user: any): user is IUser {
-        return typeof user === 'object'
-            && typeof user.login === 'string'
-            && typeof user.password === 'string'
-            && typeof user.age === 'number'
-            && typeof user.isDeleted === 'boolean'
-            // && UserRepository.isGender(user.gender);
+    async removeUserFromGroup(userId: string): Promise<IUser | object> {
+        let user: any = await this.findOneUser(userId)
+        if (user.groups[0].id) {
+            const groups = user.groups
+            await this.removeFromGroup(userId, groups)
+            return {'user': 'removed'};
+
+        }
+        return {'user': 'removed'};
+
     }
 
-    static isUserUpdater(updater: any): boolean {
-        let ret = true;
-        if (typeof updater !== 'object') {
-            throw new Error('isUserUpdater must get object');
-        }
-        if (typeof updater.login !== 'undefined') {
-            if (typeof updater.login !== 'string') ret = false;
-        }
-        if (typeof updater.password !== 'undefined') {
-            if (typeof updater.password !== 'string') ret = false;
-        }
-        if (typeof updater.age !== 'undefined') {
-            if (typeof updater.age !== 'number') ret = false;
-        }
-        // if (typeof updater.gender !== 'undefined') {
-        //     if (!UserRepository.isGender(updater.gender)) ret = false;
-        // }
-        return ret;
-    }
+    // let user = await this.userRepository.createQueryBuilder("user")
+    //     .leftJoinAndSelect("user.groups", "group")
+    //     .andWhere("user.id = :id", {id: userId})
+    //     .getOne()
+    // // if (!UserRepository.isUser(user)) {
+    //     throw new Error(`User id ${util.inspect(userId)} did not retrieve a User`);
+    // }
 
     // static isGender(gender: any): gender is Gender {
     //     return typeof gender === 'string'
@@ -87,16 +99,3 @@ export class UserRepository extends BaseRepository<IUser> {
     // }
 }
 
-export function normalizeNumber(num: number | string, errorIfNotNumber: string): number {
-    if (typeof num === 'undefined') {
-        throw new Error(`${errorIfNotNumber} -- ${num}`);
-    }
-    if (typeof num === 'number') return num;
-
-    let ret = parseInt(num);
-
-    if (isNaN(ret)) {
-        throw new Error(`${errorIfNotNumber} ${ret} -- ${num}`);
-    }
-    return ret!;
-}

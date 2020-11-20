@@ -2,7 +2,6 @@ import * as express from 'express'
 import {Container} from "typedi";
 import {DeleteResult, EntityManager, getConnection, getRepository, Repository} from "typeorm";
 import {IGroup} from "../../interfaces/IGroup";
-import {Group} from "../../entity/Group";
 import * as Route from "../routes/user";
 import {Permission} from "../constants";
 import {GroupDataAccess} from "../../controller/group";
@@ -36,8 +35,9 @@ export const initGroupRoutes = () => {
 
     const updateGroup: express.Handler = async (req: express.Request, res: express.Response): Promise<void> => {
         try {
+            const id: string = req.params.id.toString()
             const options: IGroup = req.body
-            const group: IGroup = await GroupDataAccess.updateGroup(options)
+            const group: IGroup = await GroupDataAccess.updateGroup(id, options)
             res.status(200).json(group)
         } catch (e) {
             console.log(e)
@@ -67,18 +67,18 @@ export const initGroupRoutes = () => {
         try {
             const usersIds: string[] = req.body.usersIds
             const groupId: string = req.body.groupId
-            const group: IGroup = await GroupDataAccess.addUserToGroup(usersIds, groupId)
+            const group: IGroup = await GroupDataAccess.addUserToGroup(groupId, usersIds)
             res.status(200).json(group)
         } catch (e) {
             console.log(e)
         }
     }
 
-    const delUserFromGroup: express.Handler = async (req: express.Request, res: express.Response): Promise<void> => {
+    const removeUserFromGroup: express.Handler = async (req: express.Request, res: express.Response): Promise<void> => {
         try {
             const usersIds: string[] = req.body.usersIds
             const groupId: string = req.body.groupId
-            const group: IGroup = await GroupDataAccess.delUserFromGroup(usersIds, groupId)
+            const group: IGroup = await GroupDataAccess.removeUserFromGroup(usersIds, groupId)
             res.status(200).json(group)
         } catch (e) {
             console.log(e)
@@ -98,12 +98,12 @@ export const initGroupRoutes = () => {
         },
         {
             method: "patch",
-            path: "/group",
+            path: "/group/:id",
             handler: updateGroup,
         },
         {
             method: 'get',
-            path: "/groups",
+            path: "/group",
             handler: groupList
         },
         {
@@ -118,8 +118,8 @@ export const initGroupRoutes = () => {
         },
         {
             method: 'post',
-            path: "/group-user/del",
-            handler: delUserFromGroup
+            path: "/group-user/remove",
+            handler: removeUserFromGroup
         },
     ];
 }

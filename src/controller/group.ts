@@ -3,6 +3,8 @@ import {DeleteResult, EntityManager, getConnection, getRepository, Repository} f
 import {IGroup} from "../interfaces/IGroup";
 import {Group} from "../entity/Group";
 import {User} from "../entity/User";
+import {UserService} from "../services/user";
+import GroupService from "../services/group";
 
 
 export const delUserGroups: any = async (usersIds: string[] | string, groupId: string): Promise<void> => {
@@ -35,39 +37,36 @@ export class GroupDataAccess {
     }
 
     public static async addGroup(options: IGroup): Promise<IGroup> {
-        let group: IGroup;
-        await getConnection().transaction(async (manager: EntityManager): Promise<void> => {
-            const groupRepo: Repository<Group> = manager.getRepository(Group);
-            group = new Group(options);
-            await groupRepo.insert(group)
-        })
-        return group
+        try {
+            const groupService: GroupService = Container.get(GroupService)
+            return await groupService.createGroup(options)
+        } catch (e) {
+            console.log(e)
+        }
+
+        // let group: IGroup;
+        // await getConnection().transaction(async (manager: EntityManager): Promise<void> => {
+        //     const groupRepo: Repository<Group> = manager.getRepository(Group);
+        //     group = new Group(options);
+        //     await groupRepo.insert(group)
+        // })
+        // return group
     }
 
     public static async getGroup(id: string): Promise<IGroup> {
         try {
-            let group: IGroup
-            await getConnection().transaction(async (manager: EntityManager): Promise<void> => {
-                const groupRepo: Repository<Group> = manager.getRepository(Group);
-                group = await groupRepo.findOne(id)
-            })
-            return group
+            const groupService: GroupService = Container.get(GroupService)
+            return await groupService.getGroup(id)
         } catch (e) {
             console.log(e)
         }
     }
 
-    public static async updateGroup(options: IGroup): Promise<IGroup> {
+    public static async updateGroup(id: string, options: IGroup): Promise<IGroup> {
         try {
-            let group: IGroup
-            await getConnection().transaction(async (manager: EntityManager): Promise<void> => {
-                const groupRepo: Repository<Group> = manager.getRepository(Group);
-                group = await groupRepo.findOne(options.id)
-                group.name = options.name ? options.name : group.name
-                // group.permissions = options.permissions ? options.permissions : group.permissions
-                await groupRepo.save(group)
-            })
-            return group
+            options.id = id
+            const groupService: GroupService = Container.get(GroupService)
+            return await groupService.updateGroup(options)
         } catch (e) {
             console.log(e)
         }
@@ -89,42 +88,26 @@ export class GroupDataAccess {
 
     public static async groupList(): Promise<IGroup[]> {
         try {
-            // const groupRepo: Repository<IGroup> = getRepository(Group);
-
-            // const groupModel: any = Container.get("groupModel")
-            const groupRepo: Repository<IGroup> = getRepository(Group)
-            return await groupRepo.createQueryBuilder("group")
-                .leftJoinAndSelect("group.users", "user")
-                .getMany()
+            const groupService: GroupService = Container.get(GroupService)
+            return await groupService.GetGroups()
         } catch (e) {
             console.log(e)
         }
     }
 
-    public static async addUserToGroup(usersIds: string[], groupId: string): Promise<IGroup> {
+    public static async addUserToGroup(groupId: string, usersIds: string[]): Promise<IGroup> {
         try {
-            let group: IGroup
-            await getConnection().transaction(async (manager: EntityManager): Promise<void> => {
-                const groupRepo: Repository<Group> = manager.getRepository(Group)
-                group = await groupRepo.findOne(groupId)
-                usersIds.map(async id => {
-                    await groupRepo.createQueryBuilder()
-                        .relation(Group, "users")
-                        .of(group)
-                        .add(id)
-                })
-                await manager.save(group)
-            })
-            return group
+            const groupService: GroupService = Container.get(GroupService)
+            return await groupService.addUsersToGroup(groupId, usersIds)
         } catch (e) {
             console.log(e)
         }
     }
 
-    public static async delUserFromGroup(usersIds: string[], groupId: string): Promise<IGroup> {
+    public static async removeUserFromGroup(usersIds: string[], groupId: string): Promise<IGroup> {
         try {
-            const group: IGroup = await delUserGroups(usersIds, groupId)
-            return group
+            const groupService: GroupService = Container.get(GroupService)
+            return await groupService.removeUserFromGroup(groupId, usersIds)
         } catch (e) {
             console.log(e)
         }

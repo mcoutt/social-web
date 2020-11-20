@@ -1,22 +1,3 @@
-// import {Entity, PrimaryGeneratedColumn, Column} from "typeorm";
-//
-// @Entity()
-// export class User {
-//
-//     @PrimaryGeneratedColumn()
-//     id: number;
-//
-//     @Column()
-//     firstName: string;
-//
-//     @Column()
-//     lastName: string;
-//
-//     @Column()
-//     age: number;
-//
-// }
-
 import {
     Entity,
     PrimaryGeneratedColumn,
@@ -27,14 +8,7 @@ import {
     ManyToMany
 } from "typeorm";
 import {Group} from "./Group";
-
-
-export interface UserOptions {
-    login?: string;
-    password?: string;
-    age?: number;
-    isDeleted?: boolean
-}
+import {IUser} from "../interfaces/IUser";
 
 
 @Entity()
@@ -61,10 +35,10 @@ export class User {
     @UpdateDateColumn({nullable: true})
     public updateDate: Date;
 
-    // @ManyToMany(type => Group, group => group.users)
-    // groups: Group[];
+    @ManyToMany(type => Group, group => group.users)
+    groups: Group[];
 
-    constructor(options: UserOptions = {}) {
+    constructor(options: IUser = {}) {
         this.login = options.login;
         this.password = options.password;
         this.age = options.age;

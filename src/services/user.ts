@@ -1,11 +1,9 @@
 import {Service, Inject} from 'typedi';
-import {ISuggest, IUser, IUserInputDTO} from "../interfaces/IUser";
-import {Container} from "typedi";
-import {User} from "../entity/User";
+import {IUser} from "../interfaces/IUser";
 import {UserRepository} from "../repository/user";
 import {runOnTransactionCommit, Transactional} from "typeorm-transactional-cls-hooked";
 import {OrmRepository} from "typeorm-typedi-extensions";
-import {getCustomRepository} from "typeorm";
+import {getCustomRepository, UpdateResult} from "typeorm";
 import {GroupRepository} from "../repository/group";
 
 
@@ -13,23 +11,25 @@ import {GroupRepository} from "../repository/group";
 export class UserService {
     constructor(
         protected repository: UserRepository = getCustomRepository(UserRepository)
-        // protected groupRepository: GroupRepository = getCustomRepository(GroupRepository)
-    ) {}
+    ) {
+    }
 
     @Transactional()
-    async createUser(options: any): Promise<IUser> {
-        return await this.repository.createAndSave(options)
-        // runOnTransactionCommit(() => this.events.emit('post created'))
-//     const exist = await this.getUser(user.id)
-//     if (exist) {
-//         if (exist.id === user.id) {
-//             return {
-//                 data: "User with this login exist. Please choose another login name.."
-//             }
-//         }
-//     }
-//     await this.userModel.create(user)
-// }
+    async createUser(options: IUser): Promise<IUser | object> {
+        try {
+            const exist = await this.repository.findOneUserByName(options.login)
+            if (exist) {
+                if (options.login === exist.login) {
+                    return {
+                        data: `User with this login: ${exist.login} exist already. Please choose another login name..`
+                    }
+                }
+            }
+            return await this.repository.createUser(options)
+        } catch (e) {
+            console.log(e)
+            return e.message
+        }
     }
 
     @Transactional()
@@ -38,35 +38,63 @@ export class UserService {
             return this.repository.allUsers()
         } catch (e) {
             console.log(e)
+            return e.message
         }
     }
 
     @Transactional()
-    public async GetUser(id: string): Promise<IUser> {
+    public async GetUser(id: string): Promise<IUser | string> {
         try {
-            return this.repository.findOneUser(id)
+            const exist = await this.repository.findOneUser(id)
+            if (!exist) {
+                return `User with this id: ${id} doesn't exist. Please choose another id..`
+            }
         } catch (e) {
             console.log(e)
+            return e.message
         }
 
     }
 
     @Transactional()
-     public async updateUser(user: IUserInputDTO): Promise<IUserInputDTO> {
+    async checkUser(userId: string): Promise<boolean | string> {
+        const _user: IUser | string = await this.GetUser(userId)
+        if (typeof _user === 'string') {
+            return _user;
+        }
+        return false;
+    }
+
+    @Transactional()
+    public async updateUser(user: IUser): Promise<IUser | string> {
         try {
-            return this.repository.updateUser(user)
+            const userNotExist = await this.checkUser(user.id)
+            if (userNotExist === false) {
+                return await this.repository.updateUser(user)
+            } else if (typeof userNotExist === 'string') {
+                return userNotExist
+            }
         } catch (e) {
             console.log(e)
+            return e.message
         }
     }
 
     @Transactional()
-    public async deleteUser(user: IUserInputDTO): Promise<IUserInputDTO> {
+    public async deleteUser(userId: string): Promise<IUser | string> {
         try {
-        // this.groupRepository.deleteGroup()
-        return this.repository.updateUser(user)
-        } catch (e){
+            const user: IUser | string = await this.updateUser({
+                id: userId,
+                isDeleted: true
+            })
+            if (typeof user === 'string') {
+                return user
+            } else {
+                return await this.repository.removeUserFromGroup(user.id)
+            }
+        } catch (e) {
             console.log(e)
+            return e.message
         }
     }
 }

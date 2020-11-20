@@ -1,6 +1,6 @@
 import {Container} from "typedi";
 import {EntityManager, getConnection, getRepository, Like, Repository, UpdateResult} from "typeorm";
-import {IUser, IUserInputDTO} from "../interfaces/IUser";
+import {IUser} from "../interfaces/IUser";
 import {User} from "../entity/User";
 import {delUserGroups} from "./group";
 import {UserService} from "../services/user";
@@ -8,15 +8,16 @@ import {UserService} from "../services/user";
 
 export class UserDataAccess {
 
-    // private userRepo: Repository<IUser> = getRepository(User)
-
-
-    public static async addUser(options: IUserInputDTO): Promise<IUser> {
-        const userService: UserService = Container.get(UserService)
-        return await userService.createUser(options)
+    public static async addUser(options: IUser): Promise<IUser> {
+        try {
+            const userService: UserService = Container.get(UserService)
+            return await userService.createUser(options)
+        } catch (e) {
+            console.log(e)
+        }
     }
 
-    public static async getUser(userId: string): Promise<IUser> {
+    public static async getUser(userId: string): Promise<IUser | string> {
         try {
             const userService: UserService = Container.get(UserService)
             return await userService.GetUser(userId)
@@ -25,34 +26,25 @@ export class UserDataAccess {
         }
     }
 
-    public static async updateUser(options: IUserInputDTO): Promise<IUserInputDTO> {
+    public static async updateUser(id: string, options: IUser): Promise<IUser | string> {
         try {
+            options.id = id
             const userService: UserService = Container.get(UserService)
             return await userService.updateUser(options)
-             // return await getRepository(User)
-             //    .createQueryBuilder()
-             //    .update(User)
-             //    .set(options)
-             //    .where("id = :id", {id: options.id})
-             //    .execute()
         } catch (e) {
             console.log(e)
         }
     }
 
-    public static async deleteUser(id: string): Promise<IUser> {
+    public static async deleteUser(userId: string): Promise<IUser | string> {
         try {
             // let user: any
             //     const userRepo: Repository<User> = manager.getRepository(User);
             //     user = await userRepo.findOne(id, {relations: ["groups"]})
             //     const groupId = user.groups[0].id.toString()
             //     const userIdArray = Array.of(user.id)
-            const user = {
-                id: id,
-                isDeleted: true
-            }
             const userService: UserService = Container.get(UserService)
-            return await userService.deleteUser(user)
+            return await userService.deleteUser(userId)
 
             // user.isDeleted = true
             // await userRepo.save(user)

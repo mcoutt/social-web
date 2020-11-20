@@ -9,14 +9,6 @@ export interface IUser {
     // groups?: IGroup
 }
 
-export interface IUserInputDTO {
-    id?: string;
-    login?: string;
-    password?: string;
-    age?: number;
-    isDeleted?: boolean;
-}
-
 export interface ISuggest {
     login: string;
     limit: number
